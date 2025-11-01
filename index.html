@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screw Axis Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="controls">
+            <h1>Screw Axis Visualizer</h1>
+            <section class="panel">
+                <h2>Spatial Transformation (3x4)</h2>
+                <div class="matrix-grid matrix-3x4" id="transformation-matrix">
+                    <input type="number" step="0.001" value="1" aria-label="R11" title="R11">
+                    <input type="number" step="0.001" value="0" aria-label="R12" title="R12">
+                    <input type="number" step="0.001" value="0" aria-label="R13" title="R13">
+                    <input type="number" step="0.01" value="0" aria-label="p_x" title="p_x">
+                    <input type="number" step="0.001" value="0" aria-label="R21" title="R21">
+                    <input type="number" step="0.001" value="1" aria-label="R22" title="R22">
+                    <input type="number" step="0.001" value="0" aria-label="R23" title="R23">
+                    <input type="number" step="0.01" value="0" aria-label="p_y" title="p_y">
+                    <input type="number" step="0.001" value="0" aria-label="R31" title="R31">
+                    <input type="number" step="0.001" value="0" aria-label="R32" title="R32">
+                    <input type="number" step="0.001" value="1" aria-label="R33" title="R33">
+                    <input type="number" step="0.01" value="0" aria-label="p_z" title="p_z">
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Rotation</h2>
+                <div class="euler-section">
+                    <label class="sequence-select">Euler Angles
+                        <select id="euler-sequence">
+                            <option value="XYZ">X Y' Z''</option>
+                            <option value="XZY">X Z' Y''</option>
+                            <option value="YXZ">Y X' Z''</option>
+                            <option value="YZX">Y Z' X''</option>
+                            <option value="ZXY">Z X' Y''</option>
+                            <option value="ZYX">Z Y' X''</option>
+                        </select>
+                    </label>
+                    <div class="angle-grid" id="euler-angle-inputs">
+                        <label>&alpha; (deg)
+                            <input type="number" step="0.1" value="0">
+                        </label>
+                        <label>&beta; (deg)
+                            <input type="number" step="0.1" value="0">
+                        </label>
+                        <label>&gamma; (deg)
+                            <input type="number" step="0.1" value="0">
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Screw Axis Parameters</h2>
+                <div class="axis-parameter-grid" id="screw-axis-direction">
+                    <label>Axis x
+                        <input type="number" step="0.001" value="0" readonly>
+                    </label>
+                    <label>Axis y
+                        <input type="number" step="0.001" value="0" readonly>
+                    </label>
+                    <label>Axis z
+                        <input type="number" step="0.001" value="0" readonly>
+                    </label>
+                </div>
+                <div class="axis-parameter-grid" id="screw-axis-point">
+                    <label>point x
+                        <input type="number" step="0.001" value="0" readonly>
+                    </label>
+                    <label>point y
+                        <input type="number" step="0.001" value="0" readonly>
+                    </label>
+                    <label>point z
+                        <input type="number" step="0.001" value="0" readonly>
+                    </label>
+                </div>
+                <label class="scalar-field">Rotation angle &phi; (deg)
+                    <input type="number" step="0.01" value="0" id="screw-angle" readonly>
+                </label>
+                <label class="scalar-field">Translation along axis d
+                    <input type="number" step="0.001" value="0" id="screw-displacement" readonly>
+                </label>
+                <button id="compute-screw">Apply Screw Parameters</button>
+            </section>
+
+            <section class="panel">
+                <h2>Animation</h2>
+                <div class="animation-controls">
+                    <button id="toggle-play">Play</button>
+                    <input type="range" id="progress-slider" min="0" max="1" step="0.01" value="0">
+                </div>
+            </section>
+        </aside>
+
+        <main class="canvas-wrapper">
+            <div id="three-container"></div>
+        </main>
+    </div>
+    <script src="./lib/three.min.js"></script>
+    <script src="./lib/OrbitControls.js"></script>
+    <script src="./src/main.js"></script>
+</body>
+</html>
