@@ -25,7 +25,7 @@ the Mozzi–Chasles theorem (also known as Chasles’ theorem for kinematics) pr
 2. **Parallel/orthogonal translation split** — Decompose the translation vector $\mathbf{t}$ into components parallel and orthogonal to $\mathbf{s}$:
 
    $$
-   \mathbf{t} = (\mathbf{t} \cdot \mathbf{s})\,\mathbf{s} + \mathbf{t}_\perp.
+   \mathbf{t} = (\mathbf{t} \cdot \mathbf{s}) \, \mathbf{s} + \mathbf{t}_\perp.
    $$
 
    The parallel component yields the axial slide $d = \mathbf{t} \cdot \mathbf{s}$.
