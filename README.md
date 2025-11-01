@@ -50,15 +50,6 @@ This construction handles special cases: a vanishing rotation reduces to a pure 
 - Black trajectory polyline marking the motion path of the body origin.
 - OrbitControls camera and half-transparent XY ground grid.
 
-## Running locally
-
-1. Clone the repository and install a light web server (e.g. `npm install -g serve`) if you don’t already have one.
-2. From the repository root, launch a static server:
-   ```powershell
-   serve .
-   ```
-   or use any equivalent local server.
-3. Open `index.html` in your browser; the visualiser loads the bundled `lib/three.min.js` and does not require external CDNs.
 
 ## References
 
