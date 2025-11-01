@@ -24,16 +24,16 @@ the Mozzi–Chasles theorem (also known as Chasles’ theorem for kinematics) pr
 1. **Rotation axis direction** — The rotation matrix $A$ has a unique unit eigenvector associated with eigenvalue 1. Using quaternion extraction (or a matrix logarithm), we obtain the rotation axis $\mathbf{s}$ and angle $\phi$.
 2. **Parallel/orthogonal translation split** — Decompose the translation vector $\mathbf{t}$ into components parallel and orthogonal to $\mathbf{s}$:
 
-   $$
-   \mathbf{t} = (\mathbf{t} \cdot \mathbf{s}) \, \mathbf{s} + \mathbf{t}_\perp.
-   $$
+$$
+\mathbf{t} = (\mathbf{t} \cdot \mathbf{s}) \, \mathbf{s} + \mathbf{t}_\perp.
+$$
 
    The parallel component yields the axial slide $d = \mathbf{t} \cdot \mathbf{s}$.
 3. **Axis point** — A point $\mathbf{C}$ on the axis is obtained by solving
 
-   $$
-   (I - A)\,\mathbf{C} = \mathbf{t}_\perp,
-   $$
+$$
+(I - A)\,\mathbf{C} = \mathbf{t}_\perp,
+$$
 
    together with the constraint $\mathbf{s} \cdot \mathbf{C} = 0$. This ensures $\mathbf{C}$ lies in the plane perpendicular to $\mathbf{s}$ through the origin. When $\mathbf{t}_\perp = \mathbf{0}$, the axis passes through the origin, so $\mathbf{C} = \mathbf{0}$.
 4. **Pitch** — The pitch of the screw is $p = d / \phi$ (with units of length per radian) when $\phi \ne 0$.
