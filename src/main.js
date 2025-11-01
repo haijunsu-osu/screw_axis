@@ -31,11 +31,33 @@ const initialSize = (() => {
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio || 1);
-renderer.setSize(initialSize.width, initialSize.height);
 renderer.domElement.style.width = '100%';
 renderer.domElement.style.height = '100%';
 renderer.domElement.style.display = 'block';
 container.appendChild(renderer.domElement);
+
+function createTextSprite(text, options = {}) {
+    const { fontSize = 64, color = '#111111', scale = 0.4 } = options;
+    const canvas = document.createElement('canvas');
+    const size = fontSize * 4;
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, size, size);
+    context.fillStyle = color;
+    context.font = `${fontSize}px Arial`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, size / 2, size / 2);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    const anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+    texture.anisotropy = anisotropy;
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(scale, scale, 1);
+    return sprite;
+}
 
 const camera = new THREE.PerspectiveCamera(50, initialSize.width / initialSize.height, 0.1, 200);
 camera.up.set(0, 0, 1);
@@ -154,6 +176,9 @@ const axisPointGeometry = new THREE.SphereGeometry(0.08, 24, 18);
 const axisPointMaterial = new THREE.MeshStandardMaterial({ color: 0xff3b30, metalness: 0.1, roughness: 0.4 });
 const axisPointMesh = new THREE.Mesh(axisPointGeometry, axisPointMaterial);
 axisPointMesh.visible = false;
+const axisPointLabel = createTextSprite('C', { scale: 0.7, color: '#111111' });
+axisPointLabel.position.set(0, 0, 0.28);
+axisPointMesh.add(axisPointLabel);
 scene.add(axisPointMesh);
 
 const originToAxisGeometry = new THREE.BufferGeometry().setFromPoints([
@@ -179,6 +204,23 @@ const originToFootMaterial = new THREE.LineBasicMaterial({ color: 0x111111 });
 const originToFootLine = new THREE.Line(originToFootGeometry, originToFootMaterial);
 originToFootLine.visible = false;
 scene.add(originToFootLine);
+
+const axisDirectionArrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(), 1.2, 0xff9f0a, 0.25, 0.16);
+axisDirectionArrow.visible = false;
+const axisDirectionLabel = createTextSprite('s', { scale: 0.625, color: '#111111' });
+axisDirectionLabel.position.set(0, 1.55, 0);
+axisDirectionArrow.add(axisDirectionLabel);
+scene.add(axisDirectionArrow);
+
+const originToFootTrailGeometry = new THREE.BufferGeometry();
+const originToFootTrailMaterial = new THREE.LineBasicMaterial({
+    color: 0x111111,
+    transparent: true,
+    opacity: 0.25
+});
+const originToFootTrailLine = new THREE.LineSegments(originToFootTrailGeometry, originToFootTrailMaterial);
+originToFootTrailLine.visible = false;
+scene.add(originToFootTrailLine);
 
 const trajectoryGeometry = new THREE.BufferGeometry();
 const trajectoryMaterial = new THREE.LineBasicMaterial({ color: 0x111111 });
@@ -646,23 +688,28 @@ function computeTransformAtProgress(motion, progress) {
     };
 }
 
-function updateAxisFootVisualFromPosition(motion, position) {
+function computeAxisFootPoint(motion, position) {
     if (!motion || !motion.axisDirection || !motion.axisPoint || !position) {
-        axisFootMesh.visible = false;
-        originToFootLine.visible = false;
-        return;
+        return null;
     }
     const axisDirection = motion.axisDirection.clone();
     if (axisDirection.lengthSq() < 1e-12) {
-        axisFootMesh.visible = false;
-        originToFootLine.visible = false;
-        return;
+        return null;
     }
     axisDirection.normalize();
     const axisPoint = motion.axisPoint.clone();
     const toPosition = position.clone().sub(axisPoint);
     const projectionLength = toPosition.dot(axisDirection);
-    const footPoint = axisPoint.add(axisDirection.multiplyScalar(projectionLength));
+    return axisPoint.add(axisDirection.multiplyScalar(projectionLength));
+}
+
+function updateAxisFootVisualFromPosition(motion, position) {
+    const footPoint = computeAxisFootPoint(motion, position);
+    if (!footPoint || !position) {
+        axisFootMesh.visible = false;
+        originToFootLine.visible = false;
+        return;
+    }
 
     axisFootMesh.position.copy(footPoint);
     axisFootMesh.visible = true;
@@ -674,6 +721,7 @@ function updateAxisFootVisualFromPosition(motion, position) {
         originToFootGeometry.setFromPoints([position.clone(), footPoint.clone()]);
         originToFootLine.visible = true;
     }
+
 }
 
 function updateTrajectoryLine(motion) {
@@ -701,11 +749,35 @@ function updateTrajectoryLine(motion) {
     trajectoryLine.visible = true;
 }
 
+function updateOriginToFootTrail(motion) {
+    if (!motion) {
+        originToFootTrailLine.visible = false;
+        return;
+    }
+    const samples = 80;
+    const segmentPoints = [];
+    for (let i = 0; i <= samples; i += 1) {
+        const t = i / samples;
+        const transform = computeTransformAtProgress(motion, t);
+        const footPoint = computeAxisFootPoint(motion, transform.position);
+        if (footPoint) {
+            segmentPoints.push(transform.position.clone(), footPoint.clone());
+        }
+    }
+    if (segmentPoints.length === 0) {
+        originToFootTrailLine.visible = false;
+        return;
+    }
+    originToFootTrailGeometry.setFromPoints(segmentPoints);
+    originToFootTrailLine.visible = true;
+}
+
 function updateScrewAxisVisual(point, axis) {
     if (!point || !axis) {
         screwAxisLine.visible = false;
         axisPointMesh.visible = false;
         originToAxisLine.visible = false;
+        axisDirectionArrow.visible = false;
         return;
     }
     const direction = axis.clone();
@@ -713,6 +785,7 @@ function updateScrewAxisVisual(point, axis) {
         screwAxisLine.visible = false;
         axisPointMesh.visible = false;
         originToAxisLine.visible = false;
+        axisDirectionArrow.visible = false;
         return;
     }
     direction.normalize();
@@ -728,6 +801,13 @@ function updateScrewAxisVisual(point, axis) {
 
     originToAxisGeometry.setFromPoints([new THREE.Vector3(0, 0, 0), point.clone()]);
     originToAxisLine.visible = true;
+
+    const arrowLength = 1.4;
+    axisDirectionArrow.position.copy(point);
+    axisDirectionArrow.setDirection(direction);
+    axisDirectionArrow.setLength(arrowLength, 0.28, 0.16);
+    axisDirectionLabel.position.set(0, arrowLength + 0.3, 0);
+    axisDirectionArrow.visible = true;
 }
 
 function clearScrewInputs() {
@@ -818,11 +898,13 @@ function setMotionData(data) {
     resetMotion();
     if (data) {
         updateTrajectoryLine(data);
+        updateOriginToFootTrail(data);
         applyTransform(0);
     } else {
         trajectoryLine.visible = false;
         axisFootMesh.visible = false;
         originToFootLine.visible = false;
+        originToFootTrailLine.visible = false;
     }
 }
 
@@ -839,6 +921,7 @@ function applyTransform(progress) {
     if (!state.motion) {
         animatedBody.visible = false;
         updateAxisFootVisualFromPosition(null, null);
+        originToFootTrailLine.visible = false;
         return;
     }
     animatedBody.visible = true;

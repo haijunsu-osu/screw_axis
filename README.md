@@ -2,6 +2,8 @@
 
 This project provides an offline Three.js application that visualises the screw motion relating two rigid body poses. You can open the visualiser directly in your browser through [the live preview](https://htmlpreview.github.io/?https://github.com/haijunsu-osu/screw_axis/blob/main/index.html). A screw motion is the combination of a rotation about a line together with a translation along that same line. This representation comes from the Mozzi–Chasles theorem, which states that any proper Euclidean displacement of a rigid body can be expressed as a rotation by an angle $\phi$ about a screw axis ${\bf s}$, followed by a slide $d$ along that axis.
 
+![Demo of the screw axis visualizer](demo.gif)
+
 The application lets you edit the homogeneous transformation (3×4 matrix), or equivalently the intrinsic Euler angles and translation vector, and immediately computes:
 
 - the unit direction ${\bf s}$ of the screw axis,
@@ -34,7 +36,7 @@ $$
 3. **Axis point** — A point ${\bf C}$ on the axis is obtained by solving
 
 $$
-(I - A)\,{\bf C} = {\bf t}_\perp,
+(I - A) {\bf C} = {\bf t}_\perp,
 $$
 
    together with the constraint ${\bf s} \cdot {\bf C} = 0$. This ensures ${\bf C}$ lies in the plane perpendicular to ${\bf s}$ through the origin. When ${\bf t}_\perp = {\bf 0}$, the axis passes through the origin, so ${\bf C} = {\bf 0}$.
